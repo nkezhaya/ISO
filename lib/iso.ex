@@ -242,25 +242,62 @@ defmodule ISO do
             {code, full_subdivision, variation}
           end)
 
+        # Look for an exact match first.
         division_names
-        |> Enum.map(fn {code, name, variation} ->
-          name_rank = word_similarity(name, subdivision)
+        |> Enum.find_value(fn {code, name, variation} ->
+          if subdivision == to_comparable(name) or subdivision == to_comparable(variation) do
+            code
+          else
+            nil
+          end
+        end)
+        |> case do
+          nil ->
+            # If no exact match was found, compare trigrams.
+            division_names
+            |> Enum.map(fn {code, name, variation} ->
+              name_rank = word_similarity(name, subdivision)
 
-          variation_rank =
-            if is_binary(variation) do
-              word_similarity(variation, subdivision)
-            else
-              0.0
+              variation_rank =
+                if is_binary(variation) do
+                  word_similarity(variation, subdivision)
+                else
+                  0.0
+                end
+
+              {code, max(name_rank, variation_rank)}
+            end)
+            |> Enum.filter(fn {_code, rank} -> rank >= 0.5 end)
+            |> Enum.sort_by(&elem(&1, 1), :desc)
+            |> then(fn
+              [] ->
+                []
+
+              [_] = match ->
+                match
+
+              [{_match, top_rank} | _] = matches ->
+                # If multiple matches have the top rank, use Jaro distance
+                case Enum.take_while(matches, fn {_, rank} -> rank == top_rank end) do
+                  [_] = one_top_match ->
+                    one_top_match
+
+                  top_matches ->
+                    Enum.sort_by(
+                      top_matches,
+                      fn {match, _} -> String.jaro_distance(match, subdivision) end,
+                      :desc
+                    )
+                end
+            end)
+            |> List.first()
+            |> case do
+              {code, _rank} -> code
+              _ -> nil
             end
 
-          {code, max(name_rank, variation_rank)}
-        end)
-        |> Enum.filter(fn {_code, rank} -> rank >= 0.5 end)
-        |> Enum.sort_by(&elem(&1, 1), :desc)
-        |> List.first()
-        |> case do
-          {code, _rank} -> code
-          _ -> nil
+          code ->
+            code
         end
     end
   end
