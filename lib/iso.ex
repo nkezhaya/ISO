@@ -83,6 +83,10 @@ defmodule ISO do
     end)
   end
 
+  defp equal_names?(a, b) do
+    to_comparable(a) == to_comparable(b)
+  end
+
   @doc """
   Converts a country's 2-letter code to its full name.
 
@@ -204,20 +208,14 @@ defmodule ISO do
       iex> ISO.subdivision_code("CA", "AlberTa")
       "CA-AB"
 
-      iex> ISO.subdivision_code("MX", "Veracruz")
-      "MX-VER"
-
       iex> ISO.subdivision_code("MX", "Yucatán")
       "MX-YUC"
 
       iex> ISO.subdivision_code("MX", "Yucatan")
       "MX-YUC"
 
-      iex> ISO.subdivision_code("MX", "YucatAN")
-      "MX-YUC"
-
-      iex> ISO.subdivision_code("CA", "US-TX")
-      nil
+      iex> ISO.subdivision_code("IE", "Co. Wicklow")
+      "IE-WW"
 
       iex> ISO.subdivision_code("MX", "Not a subdivision.")
       nil
@@ -235,33 +233,91 @@ defmodule ISO do
         subdivision
 
       true ->
-        subdivision = filter_for_comparison(subdivision)
+        subdivision = to_comparable(subdivision)
 
-        divisions
-        |> Enum.find(fn {_subdivision_code, %{"name" => full_subdivision} = s} ->
-          variation = s["variation"]
+        division_names =
+          Enum.map(divisions, fn {code, %{"name" => full_subdivision} = s} ->
+            variation = s["variation"]
 
-          equal_names?(full_subdivision, subdivision) or
-            (is_binary(variation) and equal_names?(variation, subdivision))
+            {code, full_subdivision, variation}
+          end)
+
+        division_names
+        |> Enum.map(fn {code, name, variation} ->
+          name_rank = word_similarity(name, subdivision)
+
+          variation_rank =
+            if is_binary(variation) do
+              word_similarity(variation, subdivision)
+            else
+              0.0
+            end
+
+          {code, max(name_rank, variation_rank)}
         end)
+        |> Enum.filter(fn {_code, rank} -> rank >= 0.5 end)
+        |> Enum.sort_by(&elem(&1, 1), :desc)
+        |> List.first()
         |> case do
-          nil -> nil
-          {subdivision_code, _full_subdivision} -> subdivision_code
+          {code, _rank} -> code
+          _ -> nil
         end
     end
   end
 
-  defp equal_names?(a, b) do
-    filter_for_comparison(a) == filter_for_comparison(b)
+  @n 3
+  defp trigrams(string) do
+    graphemes = String.graphemes(string)
+
+    do_trigrams(length(graphemes), graphemes)
   end
 
-  defp filter_for_comparison(nil), do: ""
+  defp do_trigrams(len, graphemes) when len >= @n do
+    [Enum.take(graphemes, @n) |> IO.iodata_to_binary() | do_trigrams(len - 1, tl(graphemes))]
+  end
 
-  defp filter_for_comparison(string) do
+  defp do_trigrams(_, _) do
+    []
+  end
+
+  # Returns a number that indicates how similar the first string to the most
+  # similar word of the second string. The function searches in the second
+  # string a most similar word not a most similar substring. The range of the
+  # result is zero (indicating that the two strings are completely dissimilar)
+  # to one (indicating that the first string is identical to one of the words of
+  # the second string).
+  defp word_similarity(a, b) do
+    case String.split(b) do
+      [] ->
+        0.0
+
+      words ->
+        words
+        |> Enum.map(&similarity(&1, a))
+        |> Enum.sort(:desc)
+        |> List.first(0.0)
+    end
+  end
+
+  defp similarity(a, b) do
+    a = to_comparable(a)
+    b = to_comparable(b)
+    t1 = trigrams(a) |> MapSet.new()
+    t2 = trigrams(b) |> MapSet.new()
+
+    common = MapSet.intersection(t1, t2) |> MapSet.size()
+    total = MapSet.union(t1, t2) |> MapSet.size()
+
+    common * 1.0 / total
+  end
+
+  defp to_comparable(nil), do: ""
+
+  defp to_comparable(string) do
     string
     |> String.trim()
     |> String.upcase()
-    |> String.normalize(:nfd)
+    |> :unicode.characters_to_nfd_binary()
     |> String.replace(~r/[^A-z\s]/u, "")
   end
 
