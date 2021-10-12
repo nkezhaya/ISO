@@ -4,8 +4,8 @@ defmodule ISO.MixProject do
   def project do
     [
       app: :iso,
-      version: "1.0.0",
-      elixir: "~> 1.9",
+      version: "1.1.0",
+      elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
       description: description(),
       package: package(),
