@@ -445,7 +445,7 @@ defmodule ISO do
       {:ok, %{"category" => "state", "name" => "Texas"}}
 
       iex> ISO.get_subdivision("MX-CMX")
-      {:ok, %{"category" => "federal district", "name" => "Ciudad de México"}}
+      {:ok, %{"category" => "federal entity", "name" => "Ciudad de México"}}
 
       iex> ISO.get_subdivision("11-SG")
       {:error, :not_found}
