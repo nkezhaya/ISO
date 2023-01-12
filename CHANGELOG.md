@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.0
+
+  * Updated datasets
+
 ## 1.2.0
 
   * Fixed some subdivision search issues by adding equal match checks

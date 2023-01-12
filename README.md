@@ -7,7 +7,7 @@ Provides a module that supplies ISO-3166 country data. Documentation is here: [h
 ```elixir
 def deps do
   [
-    {:iso, "~> 1.1"}
+    {:iso, "~> 1.3"}
   ]
 end
 ```

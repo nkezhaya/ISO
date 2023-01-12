@@ -4,7 +4,7 @@ defmodule ISO.MixProject do
   def project do
     [
       app: :iso,
-      version: "1.2.0",
+      version: "1.3.0",
       elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
       description: description(),
@@ -32,7 +32,7 @@ defmodule ISO.MixProject do
       ],
       maintainers: ["Nick Kezhaya"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/whitepaperclip/iso"}
+      links: %{"GitHub" => "https://github.com/nkezhaya/iso"}
     ]
   end
 
