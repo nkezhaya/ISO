@@ -4,7 +4,7 @@ defmodule ISO.MixProject do
   def project do
     [
       app: :iso,
-      version: "1.3.0",
+      version: "1.4.0",
       elixir: "~> 1.12",
       start_permanent: Mix.env() == :prod,
       description: description(),
@@ -45,8 +45,8 @@ defmodule ISO.MixProject do
   defp deps do
     [
       {:ex_doc, ">= 0.0.0", only: :dev},
-      {:jason, "~> 1.2"},
-      {:csv, "~> 2.4", optional: true, only: [:dev]}
+      {:jason, ">= 0.0.0", optional: true},
+      {:csv, "~> 3.2", optional: true, only: [:dev]}
     ]
   end
 end

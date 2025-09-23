@@ -40,7 +40,7 @@ if Code.ensure_loaded?(CSV) do
         _row, acc ->
           acc
       end)
-      |> Jason.encode!()
+      |> JSON.encode!()
       |> write_json()
     end
 
@@ -79,11 +79,11 @@ if Code.ensure_loaded?(CSV) do
     end
 
     defp write_json(json) do
-      File.write!(:code.priv_dir(:iso) ++ '/iso-3166-2.json', json)
+      File.write!(:code.priv_dir(:iso) ++ ~c"/iso-3166-2.json", json)
     end
 
     defp csv(path) do
-      :code.priv_dir(:iso) ++ '/csv/#{path}'
+      :code.priv_dir(:iso) ++ ~c"/csv/#{path}"
     end
   end
 end

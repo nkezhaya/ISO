@@ -6,7 +6,13 @@ defmodule ISO do
 
   import ISO.Util
 
-  @iso Jason.decode!(File.read!(:code.priv_dir(:iso) ++ '/iso-3166-2.json'))
+  if Code.ensure_loaded?(JSON) do
+    @decoder JSON
+  else
+    @decoder Jason
+  end
+
+  @iso @decoder.decode!(File.read!(:code.priv_dir(:iso) ++ ~c"/iso-3166-2.json"))
 
   @type country_code() :: binary()
 
