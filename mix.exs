@@ -25,7 +25,6 @@ defmodule ISO.MixProject do
       name: :iso,
       files: [
         "lib/iso.ex",
-        "lib/iso",
         "priv/iso-3166-2.json",
         "mix.exs",
         "README.md",
