@@ -47,6 +47,7 @@ defmodule ISO.MixProject do
     [
       {:ex_doc, ">= 0.0.0", only: :dev},
       {:credo, "~> 1.7", only: [:dev]},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:jason, ">= 0.0.0", optional: true},
       {:csv, "~> 3.2", optional: true, only: [:dev]}
     ]

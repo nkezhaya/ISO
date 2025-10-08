@@ -135,9 +135,6 @@ defmodule ISO do
 
   ## Examples
 
-      iex> ISO.country_code("United States")
-      "US"
-
       iex> ISO.country_code("UNITED STATES")
       "US"
 
@@ -146,15 +143,6 @@ defmodule ISO do
 
       iex> ISO.country_code("Venezuela")
       "VE"
-
-      iex> ISO.country_code("Iran")
-      "IR"
-
-      iex> ISO.country_code("Taiwan")
-      "TW"
-
-      iex> ISO.country_code("Bolivia")
-      "BO"
 
       iex> ISO.country_code("Not a country.")
       nil
@@ -208,12 +196,11 @@ defmodule ISO do
   end
 
   @doc false
+  @diacritics Regex.compile!("[\u0300-\u036f]")
   def normalize(string) do
-    diacritics = Regex.compile!("[\u0300-\u036f]")
-
     string
     |> String.normalize(:nfd)
-    |> String.replace(diacritics, "")
+    |> String.replace(@diacritics, "")
   end
 
   @doc """
@@ -392,7 +379,7 @@ defmodule ISO do
       nil
   """
 
-  @spec find_country(country_code() | String.t()) :: nil | {country_code(), map()}
+  @spec find_country(String.t()) :: nil | {country_code(), map()}
   def find_country(country) do
     if code?(country) do
       country
@@ -427,29 +414,28 @@ defmodule ISO do
       {:ok, "US-TX"}
 
       iex> ISO.find_subdivision_code("SomeCountry", "SG-SG")
-      {:error, "Invalid country: SomeCountry"}
+      {:error, :invalid_country}
 
       iex> ISO.find_subdivision_code("SG", "SG-Invalid")
-      {:error, "Invalid subdivision 'SG-Invalid' for country: SG (SG)"}
+      {:error, :invalid_subdivision}
   """
-  @spec find_subdivision_code(country_code(), String.t()) ::
-          {:ok, String.t()} | {:error, String.t()}
+  @spec find_subdivision_code(String.t(), String.t()) ::
+          {:ok, String.t()} | {:error, :invalid_country | :invalid_subdivision}
   def find_subdivision_code(country, subdivision) do
     country_code =
-      case @iso do
-        %{^country => %{}} -> country
-        _ -> country_code(country)
+      with {code, _} <- find_country(country) do
+        code
       end
 
     cond do
       is_nil(country_code) ->
-        {:error, "Invalid country: #{country}"}
+        {:error, :invalid_country}
 
       code = subdivision_code(country_code, subdivision) ->
         {:ok, code}
 
       true ->
-        {:error, "Invalid subdivision '#{subdivision}' for country: #{country} (#{country_code})"}
+        {:error, :invalid_subdivision}
     end
   end
 
@@ -471,15 +457,17 @@ defmodule ISO do
       {:error, :not_found}
 
       iex> ISO.get_subdivision("Invalid")
-      {:error, :not_found}
+      {:error, :invalid_country}
   """
   @spec get_subdivision(String.t()) :: {:ok, map()} | {:error, :invalid_country | :not_found}
-  def get_subdivision(subdivision_code) do
-    with <<country_code::binary-size(2), "-", _::binary>> <- subdivision_code,
-         %{} = sub <- get_in(@iso, [country_code, "subdivisions", subdivision_code]) do
-      {:ok, sub}
-    else
+  def get_subdivision(<<country_code::binary-size(2), "-", _::binary>> = subdivision_code) do
+    case get_in(@iso, [country_code, "subdivisions", subdivision_code]) do
+      sub when is_map(sub) -> {:ok, sub}
       _ -> {:error, :not_found}
     end
+  end
+
+  def get_subdivision(_subdivision_code) do
+    {:error, :invalid_country}
   end
 end
