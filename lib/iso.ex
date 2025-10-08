@@ -78,6 +78,8 @@ defmodule ISO do
       {a_code, %{"subdivisions" => subdivisions}} ->
         case Map.get(subdivisions, "#{a_code}-#{code}") do
           %{"name" => name} ->
+            name = to_comparable(name)
+
             equal_names?(name, country["name"]) or
               equal_names?(name, country["full_name"]) or
               equal_names?(name, country["short_name"])
@@ -91,8 +93,8 @@ defmodule ISO do
     end)
   end
 
-  defp equal_names?(a, b) do
-    to_comparable(a) == to_comparable(b)
+  defp equal_names?(comparable, b) do
+    comparable == to_comparable(b)
   end
 
   @doc """
@@ -108,6 +110,9 @@ defmodule ISO do
 
       iex> ISO.country_name("US", :short_name)
       "UNITED STATES OF AMERICA"
+
+      iex> ISO.country_name("CI", :informal)
+      "Côte d'Ivoire"
 
       iex> ISO.country_name("TN")
       "Tunisia"
@@ -179,7 +184,7 @@ defmodule ISO do
         cond do
           String.upcase(name) == country -> code
           String.upcase(full_name) == country -> code
-          strip_parens(short_name) == country -> code
+          normalize(strip_parens(short_name)) == country -> code
           true -> nil
         end
 
@@ -191,7 +196,6 @@ defmodule ISO do
   defp strip_parens(short_name) do
     short_name
     |> String.replace(~r/\(([\w\s]+)\)$/i, "", global: true)
-    |> normalize()
     |> String.trim()
   end
 

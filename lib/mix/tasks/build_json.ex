@@ -1,6 +1,6 @@
 if Code.ensure_loaded?(CSV) do
   defmodule Mix.Tasks.BuildJson do
-    # Compiles the CSVs into a usable JSON file.
+    # Compiles the CSVs into a usable JSON file. Used in development only.
     @moduledoc false
 
     use Mix.Task

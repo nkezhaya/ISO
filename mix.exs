@@ -46,10 +46,10 @@ defmodule ISO.MixProject do
   defp deps do
     [
       {:ex_doc, ">= 0.0.0", only: :dev},
+      {:jason, ">= 0.0.0", optional: true},
       {:credo, "~> 1.7", only: [:dev]},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:jason, ">= 0.0.0", optional: true},
-      {:csv, "~> 3.2", optional: true, only: [:dev]}
+      {:csv, "~> 3.2", only: [:dev]}
     ]
   end
 
