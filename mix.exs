@@ -9,6 +9,7 @@ defmodule ISO.MixProject do
       start_permanent: Mix.env() == :prod,
       description: description(),
       package: package(),
+      aliases: aliases(),
       deps: deps()
     ]
   end
@@ -45,8 +46,21 @@ defmodule ISO.MixProject do
   defp deps do
     [
       {:ex_doc, ">= 0.0.0", only: :dev},
+      {:credo, "~> 1.7", only: [:dev]},
       {:jason, ">= 0.0.0", optional: true},
       {:csv, "~> 3.2", optional: true, only: [:dev]}
+    ]
+  end
+
+  defp aliases do
+    [
+      precommit: [
+        "compile --warning-as-errors",
+        "deps.unlock --unused",
+        "format",
+        "credo --strict",
+        "test"
+      ]
     ]
   end
 end

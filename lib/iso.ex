@@ -4,8 +4,6 @@ defmodule ISO do
   compliance with the ISO-3166-2 standard.
   """
 
-  import ISO.Util
-
   if Code.ensure_loaded?(JSON) do
     @decoder JSON
   else
@@ -20,7 +18,7 @@ defmodule ISO do
   Returns all ISO-3166-2 data.
   """
   @spec data() :: %{country_code() => map()}
-  def data(), do: @iso
+  def data, do: @iso
 
   @doc """
   Returns a map of country codes and their full names. Takes in a list of
@@ -197,8 +195,17 @@ defmodule ISO do
   defp strip_parens(short_name) do
     short_name
     |> String.replace(~r/\(([\w\s]+)\)$/i, "", global: true)
-    |> unaccent()
+    |> normalize()
     |> String.trim()
+  end
+
+  @doc false
+  def normalize(string) do
+    diacritics = Regex.compile!("[\u0300-\u036f]")
+
+    string
+    |> String.normalize(:nfd)
+    |> String.replace(diacritics, "")
   end
 
   @doc """
