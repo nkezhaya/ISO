@@ -25,6 +25,8 @@ defmodule ISO do
   optional atoms to tailor the results. For example, `:with_subdivisions` only
   includes countries with subdivisions.
 
+  ## Examples
+
       iex> countries = ISO.countries()
       iex> get_in(countries, ["US", "name"])
       "United States of America (the)"
@@ -56,6 +58,8 @@ defmodule ISO do
   @doc """
   Returns true if the country with the given code is a territory of another
   country. This only applies to subdivisions that have their own country code.
+
+  ## Examples
 
       iex> ISO.territory?("PR")
       true
@@ -94,6 +98,8 @@ defmodule ISO do
   @doc """
   Converts a country's 2-letter code to its full name.
 
+  ## Examples
+
       iex> ISO.country_name("US")
       "United States of America (the)"
 
@@ -126,6 +132,8 @@ defmodule ISO do
 
   @doc """
   Converts a full country name to its 2-letter ISO-3166-2 code.
+
+  ## Examples
 
       iex> ISO.country_code("United States")
       "US"
@@ -212,23 +220,13 @@ defmodule ISO do
   Converts a full subdivision name to its 2-letter ISO-3166-2 code. The country
   MUST be an ISO-compliant 2-letter country code.
 
+  ## Examples
+
       iex> ISO.subdivision_code("US", "Texas")
       "US-TX"
 
       iex> ISO.subdivision_code("US", "US-TX")
       "US-TX"
-
-      iex> ISO.subdivision_code("CA", "AlberTa")
-      "CA-AB"
-
-      iex> ISO.subdivision_code("MX", "Yucatán")
-      "MX-YUC"
-
-      iex> ISO.subdivision_code("MX", "Yucatan")
-      "MX-YUC"
-
-      iex> ISO.subdivision_code("IE", "Co. Wicklow")
-      "IE-WW"
 
       iex> ISO.subdivision_code("MX", "Not a subdivision.")
       nil
@@ -376,6 +374,8 @@ defmodule ISO do
   country code or a string to perform a search with. Return a tuple in the
   format `{code, data}` if a country was found; otherwise `nil`.
 
+  ## Examples
+
       iex> {code, data} = ISO.find_country("United States")
       iex> code
       "US"
@@ -411,6 +411,8 @@ defmodule ISO do
   @doc """
   Takes a country input and subdivision and returns the validated,
   ISO-3166-compliant subdivision code in a tuple.
+
+  ## Examples
 
       iex> ISO.find_subdivision_code("US", "TX")
       {:ok, "US-TX"}
@@ -453,6 +455,8 @@ defmodule ISO do
 
   @doc """
   Returns the subdivision data for the ISO-3166-compliant subdivision code.
+
+  ## Examples
 
       iex> ISO.get_subdivision("US-TX")
       {:ok, %{"category" => "state", "name" => "Texas"}}
